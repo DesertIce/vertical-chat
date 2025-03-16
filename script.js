@@ -375,6 +375,35 @@ async function TwitchAutomaticRewardRedemption(data) {
 	AddMessageItem(instance, data.id);
 }
 
+function shadeColor(color, percent) {
+
+    var R = parseInt(color.substring(1,3),16);
+    var G = parseInt(color.substring(3,5),16);
+    var B = parseInt(color.substring(5,7),16);
+
+    R = parseInt(R * (100 + percent) / 100);
+    G = parseInt(G * (100 + percent) / 100);
+    B = parseInt(B * (100 + percent) / 100);
+
+    R = Math.min(R, 255);
+    G = Math.min(G, 255);
+    B = Math.min(B, 255);
+
+    R = Math.max(R, 0);
+    G = Math.max(G, 0);
+    B = Math.max(B, 0);
+
+    R = Math.round(R)
+    G = Math.round(G)
+    B = Math.round(B)
+
+    var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+    var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+    var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+    return "#"+RR+GG+BB;
+}
+
 async function TwitchAnnouncement(data) {
 	if (!showTwitchAnnouncements)
 		return;
@@ -395,6 +424,7 @@ async function TwitchAnnouncement(data) {
 	const contentDiv = instance.querySelector("#contentDiv");
 
 	// Set the card background colors
+    const userColorAdjustment = -80;
 	switch (data.announcementColor) {
 		case "BLUE":
 			cardDiv.classList.add('announcementBlue');
@@ -408,8 +438,11 @@ async function TwitchAnnouncement(data) {
 		case "PURPLE":
 			cardDiv.classList.add('announcementPurple');
 			break;
+        case "PRIMARY":
+            cardDiv.style.backgroundColor = shadeColor(data.user.color, userColorAdjustment);
+            break;
         default:
-            cardDiv.style.backgroundColor = data.announcementColor;
+            cardDiv.style.backgroundColor = shadeColor(data.announcementColor, userColorAdjustment);
 	}
 
 	// Set the card header
