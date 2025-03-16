@@ -238,7 +238,7 @@ async function TwitchChatMessage(data) {
 	}
 
 	// Set pronouns
-	const pronouns = await GetPronouns('twitch', data.message.username);
+	const pronouns = await BetterPronounsJS.GetPronouns(data.message.username, client); 
 	if (pronouns && showPronouns) {
 		pronounsDiv.classList.add("pronouns");
 		pronounsDiv.innerText = pronouns;
@@ -446,7 +446,7 @@ async function TwitchAnnouncement(data) {
 	}
 
 	// Set pronouns
-	const pronouns = await GetPronouns('twitch', data.user.login);
+	const pronouns = await BetterPronounsJS.GetPronouns(data.user.login, client);
 	if (pronouns) {
 		content.querySelector("#pronouns").classList.add("pronouns");
 		content.querySelector("#pronouns").innerText = pronouns;
@@ -1087,17 +1087,6 @@ async function GetAvatar(username) {
 		avatarMap.set(username, data);
 		return data;
 	}
-}
-
-async function GetPronouns(platform, username) {
-	const response = await client.getUserPronouns(platform, username);
-	const userFound = response.pronoun.userFound;
-	const pronouns = `${response.pronoun.pronounSubject}/${response.pronoun.pronounObject}`;
-
-	if (userFound)
-		return `${response.pronoun.pronounSubject}/${response.pronoun.pronounObject}`;
-	else
-		return '';
 }
 
 // function IsImageUrl(url) {
