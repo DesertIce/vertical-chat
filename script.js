@@ -26,7 +26,7 @@ const fontSize = urlParams.get("fontSize") || "30";
 const hideAfter = GetIntParam("hideAfter") || 0;
 const excludeCommands = GetBooleanParam("excludeCommands", true);
 const ignoreChatters = urlParams.get("ignoreChatters") || "";
-const imageEmbedPermissionLevel = GetIntParam("imageEmbedPermissionLevel") || 20;
+const imageEmbedPermissionLevel = GetIntParam("imageEmbedPermissionLevel") || 30;
 
 const showTwitchMessages = GetBooleanParam("showTwitchMessages", true);
 const showTwitchAnnouncements = GetBooleanParam("showTwitchAnnouncements", true);
@@ -408,6 +408,8 @@ async function TwitchAnnouncement(data) {
 		case "PURPLE":
 			cardDiv.classList.add('announcementPurple');
 			break;
+        default:
+            cardDiv.style.backgroundColor = data.announcementColor;
 	}
 
 	// Set the card header
@@ -430,7 +432,7 @@ async function TwitchAnnouncement(data) {
 	content.querySelector("#message").innerText = data.text;
 
 	// Remove the line break
-	content.querySelector("#colon-separator").style.display = `inline`;
+	//content.querySelector("#colon-separator").style.display = `inline`;
 	content.querySelector("#line-space").style.display = `none`;
 
 	// Render platform
@@ -1242,126 +1244,3 @@ function SetConnectionStatus(connected) {
 		statusContainer.style.opacity = 1;
 	}
 }
-
-// let data = `{
-//     "bits": 1,
-//     "cheerEmotes": [
-//         {
-//             "bits": 1,
-//             "color": "#979797",
-//             "type": "CheerEmote",
-//             "name": "Cheer",
-//             "startIndex": 0,
-//             "endIndex": 5,
-//             "imageUrl": "https://d3aqoihi2n8ty8.cloudfront.net/actions/cheer/dark/animated/1/4.gif"
-//         }
-//     ],
-//     "message": {
-//         "internal": false,
-//         "msgId": "ac304b97-35fd-4623-9ab3-2e68f24e770a",
-//         "userId": "24586202",
-//         "username": "cookievscookie",
-//         "role": 1,
-//         "subscriber": true,
-//         "subscriptionTier": "1000",
-//         "displayName": "CookieVsCookie",
-//         "color": "#DEC27A",
-//         "channel": "nutty",
-//         "message": "Cheer1 wasting all of my money 1 bit at time",
-//         "isHighlighted": false,
-//         "isMe": false,
-//         "isCustomReward": false,
-//         "isAnonymous": false,
-//         "isReply": false,
-//         "bits": 1,
-//         "firstMessage": false,
-//         "returningChatter": false,
-//         "hasBits": true,
-//         "emotes": [],
-//         "cheerEmotes": [
-//             {
-//                 "bits": 1,
-//                 "color": "#979797",
-//                 "type": "CheerEmote",
-//                 "name": "Cheer",
-//                 "startIndex": 0,
-//                 "endIndex": 5,
-//                 "imageUrl": "https://d3aqoihi2n8ty8.cloudfront.net/actions/cheer/dark/animated/1/4.gif"
-//             }
-//         ],
-//         "badges": [
-//             {
-//                 "name": "subscriber",
-//                 "version": "3",
-//                 "imageUrl": "https://static-cdn.jtvnw.net/badges/v1/c2d0acb4-a706-43a1-9d2b-0458cde2ba93/3",
-//                 "info": "4"
-//             },
-//             {
-//                 "name": "share-the-love",
-//                 "version": "1",
-//                 "imageUrl": "https://static-cdn.jtvnw.net/badges/v1/2de71f4f-b152-4308-a426-127a4cf8003a/3",
-//                 "info": ""
-//             }
-//         ],
-//         "monthsSubscribed": 4,
-//         "isTest": false,
-//         "sharedChat": false,
-//         "sourceBadges": []
-//     },
-//     "user": {
-//         "role": 1,
-//         "badges": [
-//             {
-//                 "name": "subscriber",
-//                 "version": "3",
-//                 "imageUrl": "https://static-cdn.jtvnw.net/badges/v1/c2d0acb4-a706-43a1-9d2b-0458cde2ba93/3",
-//                 "info": "4"
-//             },
-//             {
-//                 "name": "share-the-love",
-//                 "version": "1",
-//                 "imageUrl": "https://static-cdn.jtvnw.net/badges/v1/2de71f4f-b152-4308-a426-127a4cf8003a/3",
-//                 "info": ""
-//             }
-//         ],
-//         "color": "#DEC27A",
-//         "subscribed": true,
-//         "subscriptionTier": "1000",
-//         "monthsSubscribed": 4,
-//         "id": "24586202",
-//         "login": "cookievscookie",
-//         "name": "CookieVsCookie",
-//         "type": "twitch"
-//     },
-//     "messageId": "ac304b97-35fd-4623-9ab3-2e68f24e770a",
-//     "meta": {
-//         "internal": false,
-//         "firstMessage": false,
-//         "returningChatter": false,
-//         "isHighlighted": false,
-//         "isMe": false,
-//         "isCustomReward": false,
-//         "isTest": false
-//     },
-//     "anonymous": false,
-//     "text": "Cheer1 wasting all of my money 1 bit at time",
-//     "emotes": [],
-//     "parts": [
-//         {
-//             "bits": 1,
-//             "color": "#979797",
-//             "imageUrl": "https://d3aqoihi2n8ty8.cloudfront.net/actions/cheer/dark/animated/1/4.gif",
-//             "type": "cheer",
-//             "text": "Cheer"
-//         },
-//         {
-//             "type": "text",
-//             "text": " wasting all of my money 1 bit at time"
-//         }
-//     ],
-//     "isReply": false,
-//     "isSharedChat": false,
-//     "isTest": false
-// }`;
-
-// TwitchChatMessage(JSON.parse(data));
