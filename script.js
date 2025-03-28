@@ -63,7 +63,7 @@ let hexOpacity = opacity255.toString(16);
 if (hexOpacity.length < 2) {
 	hexOpacity = "0" + hexOpacity;
 }
-document.body.style.background = `${background}${hexOpacity}`;
+//document.body.style.background = `${background}${hexOpacity}`;
 
 // Get a list of chatters to ignore
 const ignoreUserList = ignoreChatters.split(',').map(item => item.trim().toLowerCase()) || [];
