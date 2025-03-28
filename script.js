@@ -22,15 +22,20 @@ const showUsername = GetBooleanParam("showUsername", true);
 const showMessage = GetBooleanParam("showMessage", true);
 const font = urlParams.get("font") || "";
 const fontSize = urlParams.get("fontSize") || "30";
+const lineSpacing = urlParams.get("lineSpacing") || "1.7";
+const background = urlParams.get("background") || "#000000";
+const opacity = urlParams.get("opacity") || "0.85";
 
 const hideAfter = GetIntParam("hideAfter") || 0;
 const excludeCommands = GetBooleanParam("excludeCommands", true);
 const ignoreChatters = urlParams.get("ignoreChatters") || "";
-const imageEmbedPermissionLevel = GetIntParam("imageEmbedPermissionLevel") || 30;
+const scrollDirection = GetIntParam("scrollDirection") || 1;
+const imageEmbedPermissionLevel = GetIntParam("imageEmbedPermissionLevel") || 20;
 
 const showTwitchMessages = GetBooleanParam("showTwitchMessages", true);
 const showTwitchAnnouncements = GetBooleanParam("showTwitchAnnouncements", true);
 const showTwitchSubs = GetBooleanParam("showTwitchSubs", true);
+const showTwitchChannelPointRedemptions = GetBooleanParam("showTwitchChannelPointRedemptions", true);
 const showTwitchRaids = GetBooleanParam("showTwitchRaids", true);
 
 const showYouTubeMessages = GetBooleanParam("showYouTubeMessages", true);
@@ -40,14 +45,40 @@ const showYouTubeMemberships = GetBooleanParam("showYouTubeMemberships", true);
 
 const showStreamlabsDonations = GetBooleanParam("showStreamlabsDonations", true)
 const showStreamElementsTips = GetBooleanParam("showStreamElementsTips", true);
+const showPatreonMemberships = GetBooleanParam("showPatreonMemberships", true);
+const showKofiDonations = GetBooleanParam("showKofiDonations", true);
+const showTipeeeStreamDonations = GetBooleanParam("showTipeeeStreamDonations", true);
+const showFourthwallAlerts = GetBooleanParam("showFourthwallAlerts", true);
 
 // Set fonts for the widget
 document.body.style.fontFamily = font;
 document.body.style.fontSize = `${fontSize}px`;
 
+// Set line spacing
+document.documentElement.style.setProperty('--line-spacing', `${lineSpacing}em`);
+
+// Set the background color
+const opacity255 = Math.round(parseFloat(opacity) * 255);
+let hexOpacity = opacity255.toString(16);
+if (hexOpacity.length < 2) {
+	hexOpacity = "0" + hexOpacity;
+}
+document.body.style.background = `${background}${hexOpacity}`;
+
 // Get a list of chatters to ignore
 const ignoreUserList = ignoreChatters.split(',').map(item => item.trim().toLowerCase()) || [];
 
+// Set the scroll direction
+switch (scrollDirection)
+{
+	case 1:
+		document.getElementById('messageList').classList.add('normalScrollDirection');
+		break;
+	case 2:
+		document.getElementById('messageList').classList.add('reverseScrollDirection');
+		break;
+}
+	
 
 
 
@@ -106,6 +137,11 @@ client.on('Twitch.ReSub', (response) => {
 client.on('Twitch.GiftSub', (response) => {
 	console.debug(response.data);
 	TwitchGiftSub(response.data);
+})
+
+client.on('Twitch.RewardRedemption', (response) => {
+	console.debug(response.data);
+	TwitchRewardRedemption(response.data);
 })
 
 client.on('Twitch.Raid', (response) => {
@@ -168,6 +204,66 @@ client.on('StreamElements.Tip', (response) => {
 	StreamElementsTip(response.data);
 })
 
+client.on('Patreon.PledgeCreated', (response) => {
+	console.debug(response.data);
+	PatreonPledgeCreated(response.data);
+})
+
+client.on('Kofi.Donation', (response) => {
+	console.debug(response.data);
+	KofiDonation(response.data);
+})
+
+client.on('Kofi.Subscription', (response) => {
+	console.debug(response.data);
+	KofiSubscription(response.data);
+})
+
+client.on('Kofi.Resubscription', (response) => {
+	console.debug(response.data);
+	KofiResubscription(response.data);
+})
+
+client.on('Kofi.ShopOrder', (response) => {
+	console.debug(response.data);
+	KofiShopOrder(response.data);
+})
+
+client.on('TipeeeStream.Donation', (response) => {
+	console.debug(response.data);
+	TipeeeStreamDonation(response.data);
+})
+
+client.on('Fourthwall.OrderPlaced', (response) => {
+	console.debug(response.data);
+	FourthwallOrderPlaced(response.data);
+})
+
+client.on('Fourthwall.Donation', (response) => {
+	console.debug(response.data);
+	FourthwallDonation(response.data);
+})
+
+client.on('Fourthwall.SubscriptionPurchased', (response) => {
+	console.debug(response.data);
+	FourthwallSubscriptionPurchased(response.data);
+})
+
+client.on('Fourthwall.GiftPurchase', (response) => {
+	console.debug(response.data);
+	FourthwallGiftPurchase(response.data);
+})
+
+client.on('Fourthwall.GiftDrawStarted', (response) => {
+	console.debug(response.data);
+	FourthwallGiftDrawStarted(response.data);
+})
+
+client.on('Fourthwall.GiftDrawEnd', (response) => {
+	console.debug(response.data);
+	FourthwallGiftDrawEnd(response.data);
+})
+
 
 
 ///////////////////////
@@ -183,7 +279,7 @@ async function TwitchChatMessage(data) {
 		return;
 
 	// Don't post messages from users from the ignore list
-	if (ignoreUserList.includes(data.message.username))
+	if (ignoreUserList.includes(data.message.username.toLowerCase()))
 		return;
 
 	// Get a reference to the template
@@ -302,8 +398,9 @@ async function TwitchChatMessage(data) {
 	}
 
 	// Hide the header if the same username sends a message twice in a row
+	// EXCEPT when the scroll direction is set to reverse (scrollDirection == 2)
 	const messageList = document.getElementById("messageList");
-	if (messageList.children.length > 0) {
+	if (messageList.children.length > 0 && scrollDirection != 2) {
 		const lastPlatform = messageList.lastChild.dataset.platform;
 		const lastUserId = messageList.lastChild.dataset.userId;
 		if (lastPlatform == "twitch" && lastUserId == data.user.id)
@@ -465,7 +562,7 @@ async function TwitchAnnouncement(data) {
 	content.querySelector("#message").innerText = data.text;
 
 	// Remove the line break
-	//content.querySelector("#colon-separator").style.display = `inline`;
+	content.querySelector("#colon-separator").style.display = `inline`;
 	content.querySelector("#line-space").style.display = `none`;
 
 	// Render platform
@@ -636,6 +733,50 @@ async function TwitchGiftSub(data) {
 	AddMessageItem(instance, data.messageId);
 }
 
+async function TwitchRewardRedemption(data) {
+	if (!showTwitchChannelPointRedemptions)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('twitch');
+
+	if (showAvatar) {
+		// Render avatars
+		const username = data.user_login;
+		const avatarURL = await GetAvatar(username);
+		const avatar = new Image();
+		avatar.src = avatarURL;
+		avatar.classList.add("avatar");
+		avatarDiv.appendChild(avatar);
+	}
+
+	// Set the text
+	const username = data.user_name;
+	const rewardName = data.reward.title;
+	const cost = data.reward.cost;
+	const userInput = data.user_input;
+	const channelPointIcon = `<img src="icons/badges/twitch-channel-point.png" class="platform"/>`;
+
+	titleDiv.innerHTML = `${username} redeemed ${rewardName} ${channelPointIcon} ${cost}`;
+	contentDiv.innerText = `${userInput}`;
+
+	AddMessageItem(instance, data.messageId);
+}
+
 async function TwitchRaid(data) {
 	if (!showTwitchRaids)
 		return;
@@ -745,7 +886,7 @@ function YouTubeMessage(data) {
 	// Don't post messages from users from the ignore list
 	if (ignoreUserList.includes(data.user.name.toLowerCase()))
 		return;
-   
+
 	// Get a reference to the template
 	const template = document.getElementById('messageTemplate');
 
@@ -824,7 +965,8 @@ function YouTubeMessage(data) {
 	// Render emotes
 	for (i in data.emotes) {
 		const emoteElement = `<img src="${data.emotes[i].imageUrl}" class="emote"/>`;
-		messageDiv.innerHTML = messageDiv.innerHTML.replace(new RegExp(`\\b${data.emotes[i].name}\\b`), emoteElement);
+		// messageDiv.innerHTML = messageDiv.innerHTML.replace(new RegExp(`\\b${data.emotes[i].name}\\b`), emoteElement);
+		messageDiv.innerHTML = messageDiv.innerHTML.replace(data.emotes[i].name, emoteElement);
 	}
 
 	// Render avatars
@@ -837,8 +979,9 @@ function YouTubeMessage(data) {
 
 
 	// Hide the header if the same username sends a message twice in a row
+	// EXCEPT when the scroll direction is set to reverse (scrollDirection == 2)
 	const messageList = document.getElementById("messageList");
-	if (messageList.children.length > 0) {
+	if (messageList.children.length > 0 && scrollDirection != 2) {
 		const lastPlatform = messageList.lastChild.dataset.platform;
 		const lastUserId = messageList.lastChild.dataset.userId;
 		if (lastPlatform == "youtube" && lastUserId == data.user.id)
@@ -1055,6 +1198,299 @@ async function StreamElementsTip(data) {
 	AddMessageItem(instance, data.id);
 }
 
+function KofiDonation(data) {
+	if (!showKofiDonations)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('kofi');
+
+	// Set the text
+	const user = data.from;
+	const amount = data.amount;
+	const currency = data.currency;
+	const message = data.message;
+	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+
+	if (currency == "USD")
+		titleDiv.innerHTML = `${kofiIcon} ${user} donated $${amount}`;
+	else
+		titleDiv.innerHTML = `${kofiIcon} ${user} donated ${currency} ${amount}`;
+	
+	if (message != null)
+		contentDiv.innerHTML = `${message}`;
+
+	AddMessageItem(instance, data.id);
+}
+
+function KofiSubscription(data) {
+	if (!showKofiDonations)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('kofi');
+
+	// Set the text
+	const user = data.from;
+	const amount = data.amount;
+	const currency = data.currency;
+	const message = data.message;
+	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+
+	if (currency == "USD")
+		titleDiv.innerHTML = `${kofiIcon} ${user} subscribed ($${amount})`;
+	else
+		titleDiv.innerHTML = `${kofiIcon} ${user} subscribed (${currency} ${amount})`;
+	
+	if (message != null)
+		contentDiv.innerHTML = `${message}`;
+
+	AddMessageItem(instance, data.id);
+}
+
+function KofiResubscription(data) {
+	if (!showKofiDonations)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('kofi');
+
+	// Set the text
+	const user = data.from;
+	const tier = data.tier;
+	const message = data.message;
+	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+
+	titleDiv.innerHTML = `${kofiIcon} ${user} subscribed (${tier})`;
+	if (message != null)
+		contentDiv.innerHTML = `${message}`;
+
+	AddMessageItem(instance, data.id);
+}
+
+function KofiShopOrder(data) {
+	if (!showKofiDonations)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('kofi');
+
+	// Set the text
+	const user = data.from;
+	const amount = data.amount;
+	const currency = data.currency;
+	const message = data.message;
+	const itemTotal = data.items.length;
+	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+	let formattedAmount = "";
+
+	if (amount == 0)
+		formattedAmount = ""
+	else if (currency == "USD")
+		formattedAmount = `($${amount})`;
+	else
+		formattedAmount = `(${currency} ${amount})`;
+
+	titleDiv.innerHTML = `${kofiIcon} ${user} ordered ${itemTotal} item(s) on Ko-fi ${formattedAmount}`;
+	if (message != null)
+		contentDiv.innerHTML = `${message}`;
+
+	AddMessageItem(instance, data.id);
+}
+
+function TipeeeStreamDonation(data) {
+	if (!showTipeeeStreamDonations)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('tipeeeStream');
+
+	// Set the text
+	const user = data.username;
+	const amount = data.amount;
+	const currency = data.currency;
+	const message = data.message;
+	const tipeeeStreamIcon = `<img src="icons/platforms/tipeeeStream.png" class="platform"/>`;
+
+	if (currency == "USD")
+		titleDiv.innerHTML = `${tipeeeStreamIcon} ${user} donated $${amount}`;
+	else
+		titleDiv.innerHTML = `${tipeeeStreamIcon} ${user} donated ${currency} ${amount}`;
+
+	if (message != null)
+		contentDiv.innerHTML = `${message}`;
+
+	AddMessageItem(instance, data.id);
+}
+
+function FourthwallOrderPlaced(data) {
+	if (!showFourthwallAlerts)
+		return;
+
+	// Get a reference to the template
+	const template = document.getElementById('cardTemplate');
+
+	// Create a new instance of the template
+	const instance = template.content.cloneNode(true);
+
+	// Get divs
+	const cardDiv = instance.querySelector("#card");
+	const headerDiv = instance.querySelector("#header");
+	const avatarDiv = instance.querySelector("#avatar");
+	const iconDiv = instance.querySelector("#icon");
+	const titleDiv = instance.querySelector("#title");
+	const contentDiv = instance.querySelector("#content");
+
+	// Set the card background colors
+	cardDiv.classList.add('blank');
+	titleDiv.classList.add('centerThatShitHomie');
+	contentDiv.classList.add('centerThatShitHomie');
+
+	// Set the text
+	let user = data.username;
+	const orderTotal = data.total;
+	const currency = data.currency;
+	const item = data.variants[0].name;
+	const itemsOrdered = data.variants.length;
+	const message = DecodeHTMLString(data.statmessageus);
+	const itemImageUrl = data.variants[0].image;
+	const fourthwallProductImage = `<img src="${itemImageUrl}" class="productImage"/>`;
+	
+	let contents = "";
+
+	contents += fourthwallProductImage;
+
+	contents += "<br><br>"
+
+	// If there user did not provide a username, just say "Someone"
+	if (user == undefined)
+		user = "Someone"
+
+	// If the user ordered more than one item, write how many items they ordered
+	contents += `${user} ordered ${item}`;
+	if (itemsOrdered > 1)
+		contents += ` and ${itemsOrdered - 1} other item(s)!`
+
+	// If the user spent money, put the order total
+	if (orderTotal == 0)
+		contents += ``;
+	else if (currency == "USD")
+		contents = ` ($${orderTotal})`;
+	else
+		contents = ` (${orderTotal} ${currency})`;
+
+	titleDiv.innerHTML = contents;
+
+	// Add the custom message from the user
+	if (message.trim() != "")
+		contentDiv.innerHTML = `${message}`;
+	else
+		contentDiv.style.display = 'none'
+
+	AddMessageItem(instance, data.id);
+}
+
+function FourthwallDonation(data) {
+	if (!showFourthwallAlerts)
+		return;
+
+}
+
+function FourthwallSubscriptionPurchased(data) {
+	if (!showFourthwallAlerts)
+		return;
+
+}
+
+function FourthwallGiftPurchase(data) {
+	console.log(data);
+	if (!showFourthwallAlerts)
+		return;
+
+}
+
+function FourthwallGiftDrawStarted(data) {
+	if (!showFourthwallAlerts)
+		return;
+
+}
+
+function FourthwallGiftDrawEnd(data) {
+	if (!showFourthwallAlerts)
+		return;
+
+}
+
 
 
 //////////////////////
@@ -1124,6 +1560,17 @@ async function GetAvatar(username) {
 	}
 }
 
+async function GetPronouns(platform, username) {
+	const response = await client.getUserPronouns(platform, username);
+	const userFound = response.pronoun.userFound;
+	const pronouns = `${response.pronoun.pronounSubject}/${response.pronoun.pronounObject}`;
+
+	if (userFound)
+		return `${response.pronoun.pronounSubject}/${response.pronoun.pronounObject}`;
+	else
+		return '';
+}
+
 // function IsImageUrl(url) {
 // 	return url.match(/^http.*\.(jpeg|jpg|gif|png)$/) != null;
 // }
@@ -1152,6 +1599,10 @@ function AddMessageItem(element, elementID, platform, userId) {
 		lineItem.id = elementID;
 		lineItem.dataset.platform = platform;
 		lineItem.dataset.userId = userId;
+
+		// Set scroll direction
+		if (scrollDirection == 2)
+			lineItem.classList.add('reverseLineItemDirection');
 
 		// Move the element from the temp div to the new line item
 		while (tempDiv.firstChild) {
@@ -1184,6 +1635,12 @@ function AddMessageItem(element, elementID, platform, userId) {
 		}
 
 	}, 100);
+}
+
+function DecodeHTMLString(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
 }
 
 // I used Gemini for this shit so if it doesn't work, blame Google

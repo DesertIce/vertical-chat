@@ -39,14 +39,21 @@ body {
 	height: calc(100% - 2 * var(--margin));
 	width: calc(100% - 2 * var(--margin));
 	margin: var(--margin);
-    
 }
 
 #messageList {
 	position: absolute;
-	bottom: 0;
 	left: 0;
 	width: 100%;
+}
+
+.normalScrollDirection {
+	bottom: 0;
+}
+.reverseScrollDirection {
+	display: flex;
+	top: 0;
+	flex-direction: column-reverse;
 }
 
 li {
@@ -55,6 +62,11 @@ li {
 	height: 0;
     margin-top: 10px;
 	transition: all 1s ease-in-out;
+}
+.reverseLineItemDirection {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
 }
 
 .slide-fade li {
@@ -74,7 +86,7 @@ li {
 #firstMessage {
 	display: none;
 	font-weight: 500;
-	font-size: 0.7rem;
+	font-size: 0.7em;
 }
 
 .firstMessageHighlight {
@@ -93,15 +105,17 @@ li {
 .timestamp,
 .pronouns {
 	background: #adadad46;
-	border-radius: var(--border-radius);
+	/* border-radius: var(--border-radius); */
+	border-radius: 1em;
 	font-size: 0.7em;
-	padding: 5px 15px;
+	/* padding: 5px 15px; */
+	padding: 0.15em 0.5em;
 }
 
 .bits {
 	background: #adadad46;
 	border-radius: calc(var(--border-radius) / 2);
-	font-size: 0.7rem;
+	font-size: 0.7em;
 	padding: 5px 10px;
 }
 
@@ -111,6 +125,18 @@ li {
 	height: 1em;
 	margin: 1px;
 	transform: translate(0px, 0.25em);
+}
+
+.productImage {
+	height: 10em;
+	border-radius: 0.25em;
+	transform: translate(0px, 0.25em);
+}
+
+.centerThatShitHomie {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
 }
 
 #badgeList {
@@ -131,18 +157,13 @@ li {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: 0.7rem;
+	font-size: 0.7em;
 	opacity: 0.5;
 }
 
 #message {
 	font-weight: 400;
-	line-height: 1.7em;
-	text-align: right;
-	display: block;
-}
-
-#userInfo {
+	line-height: var(--line-spacing);
     display: block;
     text-align: right;
 }
@@ -200,6 +221,26 @@ li {
 
 .streamelements {
 	background: linear-gradient(#263b8abf, #0a112abf) !important;
+}
+
+.patreon {
+	background: linear-gradient(#c76633, #fd5e0a) !important;
+}
+
+.kofi {
+	background: linear-gradient(#54c7ee, #08c2ff) !important;
+}
+
+.tipeeeStream {
+	background: linear-gradient(#120e23, #5d192a) !important;
+}
+
+.fourthwall {
+	background: linear-gradient(#405eb3, #0d3cb9) !important;
+}
+
+.blank {
+	background: #adadad00 !important;
 }
 
 /****************/
