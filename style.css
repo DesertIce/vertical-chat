@@ -128,7 +128,7 @@ li {
 }
 
 .productImage {
-	height: 10em;
+	height: 15em;
 	border-radius: 0.25em;
 	transform: translate(0px, 0.25em);
 }
