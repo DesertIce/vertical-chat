@@ -3,6 +3,11 @@
 	padding: 0;
 	--margin: 40px;
 	--border-radius: 20px;
+	/* --line-spacing: 1.7em; */
+}
+
+body {
+	overflow: hidden;
 }
 
 html {
@@ -59,10 +64,11 @@ body {
 li {
 	list-style: none;
 	overflow: hidden;
-	height: 0;
-    margin-top: 10px;
+	max-height: 0;
+	margin: 10px 0px 0px 0px;
 	transition: all 1s ease-in-out;
 }
+
 .reverseLineItemDirection {
 	display: flex;
 	flex-direction: column;
@@ -70,26 +76,26 @@ li {
 }
 
 .slide-fade li {
-	transition: all 0.5s ease-out;
-	opacity: 0;
+	transition: all var(--animation-speed) ease-out;
+	/* opacity: 0; */
 }
 
 .slide-fade li.show {
-	opacity: 1;
+	/* opacity: 1; */
 }
 
 #IPutThisHereSoICanCalculateHowBigEachMessageIsSupposedToBeBeforeIAddItToTheMessageList {
-    margin-top: 10px;
 	opacity: 0;
 }
 
-#firstMessage {
+#firstMessage,
+#sharedChat {
 	display: none;
 	font-weight: 500;
 	font-size: 0.7em;
 }
 
-.firstMessageHighlight {
+.highlightMessage {
 	background: #adadad46;
 	padding: 20px 40px;
 	border-radius: var(--border-radius);
@@ -120,11 +126,16 @@ li {
 }
 
 .platform,
-.badge,
-.emote {
+.badge {
 	height: 1em;
 	margin: 1px;
 	transform: translate(0px, 0.25em);
+}
+
+.emote {
+	height: 1.5em;
+	margin: 1px;
+	transform: translate(0px, 0.4em);
 }
 
 .productImage {
@@ -224,19 +235,19 @@ li {
 }
 
 .patreon {
-	background: linear-gradient(#c76633, #fd5e0a) !important;
+	background: linear-gradient(#c76633bf, #fd5e0abf) !important;
 }
 
 .kofi {
-	background: linear-gradient(#54c7ee, #08c2ff) !important;
+	background: linear-gradient(#54c7eebf, #08c2ffbf) !important;
 }
 
 .tipeeeStream {
-	background: linear-gradient(#120e23, #5d192a) !important;
+	background: linear-gradient(#120e23bf, #5d192abf) !important;
 }
 
 .fourthwall {
-	background: linear-gradient(#405eb3, #0d3cb9) !important;
+	background: linear-gradient(#466edbbf, #1c56f5bf) !important;
 }
 
 .blank {
