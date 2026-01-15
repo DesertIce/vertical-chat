@@ -409,7 +409,18 @@ async function TwitchChatMessage(data) {
 	// Render emotes
 	for (i in data.emotes) {
 		const emoteElement = `<img src="${data.emotes[i].imageUrl}" class="emote"/>`;
-		const emoteName = EscapeRegExp(data.emotes[i].name);
+		let emoteName = data.emotes[i].name;
+
+		// Workaround for Streamer.bot bug: /me action messages have corrupted emote names
+		// The emote name contains the IRC protocol prefix "\u0001ACTION " instead of actual name
+		// Extract the correct emote name from the message text using startIndex/endIndex
+		if (data.message.isMe && emoteName.startsWith('\u0001ACTION ')) {
+			const startIndex = data.emotes[i].startIndex;
+			const endIndex = data.emotes[i].endIndex;
+			emoteName = data.message.message.substring(startIndex, endIndex + 1);
+		}
+
+		emoteName = EscapeRegExp(emoteName);
 
 		let regexPattern = emoteName;
 
