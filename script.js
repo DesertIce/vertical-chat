@@ -18,6 +18,7 @@ const showAvatar = GetBooleanParam("showAvatar", true);
 const showTimestamps = GetBooleanParam("showTimestamps", true);
 const showBadges = GetBooleanParam("showBadges", true);
 const showPronouns = GetBooleanParam("showPronouns", true);
+const showFlags = GetBooleanParam("showFlags", true);
 const showUsername = GetBooleanParam("showUsername", true);
 const showMessage = GetBooleanParam("showMessage", true);
 const font = urlParams.get("font") || "";
@@ -310,6 +311,7 @@ async function TwitchChatMessage(data) {
 	const badgeListDiv = instance.querySelector("#badgeList");
 	const pronounsDiv = instance.querySelector("#pronouns");
 	const usernameDiv = instance.querySelector("#username");
+	const flagDiv = instance.querySelector("#flag");
 	const messageDiv = instance.querySelector("#message");
 
 	// Set First Time Chatter
@@ -358,8 +360,11 @@ async function TwitchChatMessage(data) {
 		usernameDiv.style.color = data.message.color;
 	}
 
-	// Set pronouns
-	const pronouns = await BetterPronounsJS.GetPronouns(data.message.username, client); 
+	// Set pronouns and flag
+	const [pronouns] = await Promise.all([
+		BetterPronounsJS.GetPronouns(data.message.username, client),
+		TwitchFlagsIntegration.RenderFlag(flagDiv, data.user.id, showFlags),
+	]);
 	if (pronouns && showPronouns) {
 		pronounsDiv.classList.add("pronouns");
 		pronounsDiv.innerText = pronouns;
@@ -602,8 +607,11 @@ async function TwitchAnnouncement(data) {
 		content.querySelector("#badgeList").appendChild(badge);
 	}
 
-	// Set pronouns
-	const pronouns = await BetterPronounsJS.GetPronouns(data.user.login, client);
+	// Set pronouns and flag
+	const [pronouns] = await Promise.all([
+		BetterPronounsJS.GetPronouns(data.user.login, client),
+		TwitchFlagsIntegration.RenderFlag(content.querySelector("#flag"), data.user.id, showFlags),
+	]);
 	if (pronouns) {
 		content.querySelector("#pronouns").classList.add("pronouns");
 		content.querySelector("#pronouns").innerText = pronouns;
