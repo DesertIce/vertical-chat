@@ -47,7 +47,7 @@ node --test
 
 ## Credits
 
-Vertical Chat is based on [Nutty's MultiChat Overlay](https://github.com/nuttylmao/multichat-overlay). It also uses the [Streamer.bot client](https://github.com/Streamerbot/client), [BetterPronounsJS](https://github.com/DesertIce/BetterPronounsJS), and [TwitchFlagsJS](https://github.com/DesertIce/TwitchFlagsJS). Third-party code and artwork remain subject to their respective licenses.
+Vertical Chat is a fork of [Nutty's MultiChat Overlay](https://github.com/nuttylmao/multichat-overlay). It also uses the [Streamer.bot client](https://github.com/Streamerbot/client), [BetterPronounsJS](https://github.com/DesertIce/BetterPronounsJS), and [TwitchFlagsJS](https://github.com/DesertIce/TwitchFlagsJS). Third-party code and artwork remain subject to their respective licenses.
 
 ## License
 
