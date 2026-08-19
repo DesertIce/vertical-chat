@@ -282,12 +282,19 @@ async function TwitchChatMessage(data) {
 	if (!showTwitchMessages)
 		return;
 
+	let message = data.text ?? "";
+	const username = data.user?.login ?? "anonymous";
+	const displayName = data.user?.name ?? "Anonymous";
+	const userId = data.user?.id ?? "anonymous";
+	const userColor = data.user?.color ?? "";
+	const userBadges = data.user?.badges ?? [];
+
 	// Don't post messages starting with "!"
-	if (data.message.message.startsWith("!") && excludeCommands)
+	if (message.startsWith("!") && excludeCommands)
 		return;
 
 	// Don't post messages from users from the ignore list
-	if (ignoreUserList.includes(data.message.username.toLowerCase()))
+	if (ignoreUserList.includes(username.toLowerCase()))
 		return;
 
 	// Get a reference to the template
@@ -315,33 +322,32 @@ async function TwitchChatMessage(data) {
 	const messageDiv = instance.querySelector("#message");
 
 	// Set First Time Chatter
-	const firstMessage = data.message.firstMessage;
+	const firstMessage = data.meta?.firstMessage;
 	if (firstMessage && showMessage) {
 		firstMessageDiv.style.display = 'block';
 		messageContainerDiv.classList.add("highlightMessage");
 	}
 
 	// Set Shared Chat
-	console.log(showTwitchSharedChat);
-	const isSharedChat = data.isSharedChat;
+	const isSharedChat = data.isInSharedChat;
 	if (isSharedChat) {
 		if (showTwitchSharedChat > 1) {
-			if (!data.sharedChat.primarySource) {
-				const sharedChatChannel = data.sharedChat.sourceRoom.name;
+			if (data.isFromSharedChatGuest && data.sharedChatSource) {
+				const sharedChatChannel = data.sharedChatSource.name;
 				sharedChatDiv.style.display = 'block';
 				sharedChatChannelDiv.innerHTML = `💬 ${sharedChatChannel}`;
 				messageContainerDiv.classList.add("highlightMessage");
 			}
 		}
-		else if (!data.sharedChat.primarySource && showTwitchSharedChat == 0)
+		else if (data.isFromSharedChatGuest && showTwitchSharedChat == 0)
 			return;
 	}
 
 	// Set Reply Message
-	const isReply = data.message.isReply;
-	if (isReply && showMessage) {
-		const replyUser = data.message.reply.userName;
-		const replyMsg = data.message.reply.msgBody;
+	const isReply = data.isReply;
+	if (isReply && data.reply && showMessage) {
+		const replyUser = data.reply.userName;
+		const replyMsg = data.reply.msgBody;
 
 		replyDiv.style.display = 'block';
 		replyUserDiv.innerText = replyUser;
@@ -356,14 +362,14 @@ async function TwitchChatMessage(data) {
 
 	// Set the username info
 	if (showUsername) {
-		usernameDiv.innerText = data.message.displayName;
-		usernameDiv.style.color = data.message.color;
+		usernameDiv.innerText = displayName;
+		usernameDiv.style.color = userColor;
 	}
 
 	// Set pronouns and flag
 	const [pronouns] = await Promise.all([
-		BetterPronounsJS.GetPronouns(data.message.username, client),
-		TwitchFlagsIntegration.RenderFlag(flagDiv, data.user.id, showFlags),
+		data.user ? BetterPronounsJS.GetPronouns(username, client) : Promise.resolve(),
+		data.user ? TwitchFlagsIntegration.RenderFlag(flagDiv, data.user.id, showFlags) : Promise.resolve(),
 	]);
 	if (pronouns && showPronouns) {
 		pronounsDiv.classList.add("pronouns");
@@ -371,9 +377,7 @@ async function TwitchChatMessage(data) {
 	}
 
 	// Set the message data
-	let message = data.message.message;
-	const messageColor = data.message.color;
-	const role = data.message.role;
+	const messageColor = userColor;
 
 	// Set furry mode
 	if (furryMode)
@@ -385,7 +389,7 @@ async function TwitchChatMessage(data) {
 	}
 
 	// Set the "action" color
-	if (data.message.isMe)
+	if (data.meta?.isMe)
 		messageDiv.style.color = messageColor;
 
 	// Remove the line break
@@ -403,9 +407,9 @@ async function TwitchChatMessage(data) {
 	// Render badges
 	if (showBadges) {
 		badgeListDiv.innerHTML = "";
-		for (i in data.message.badges) {
+		for (i in userBadges) {
 			const badge = new Image();
-			badge.src = data.message.badges[i].imageUrl;
+			badge.src = userBadges[i].imageUrl;
 			badge.classList.add("badge");
 			badgeListDiv.appendChild(badge);
 		}
@@ -413,19 +417,8 @@ async function TwitchChatMessage(data) {
 
 	// Render emotes
 	for (i in data.emotes) {
-		const emoteElement = `<img src="${data.emotes[i].imageUrl}" class="emote"/>`;
-		let emoteName = data.emotes[i].name;
-
-		// Workaround for Streamer.bot bug: /me action messages have corrupted emote names
-		// The emote name contains the IRC protocol prefix "\u0001ACTION " instead of actual name
-		// Extract the correct emote name from the message text using startIndex/endIndex
-		if (data.message.isMe && emoteName.startsWith('\u0001ACTION ')) {
-			const startIndex = data.emotes[i].startIndex;
-			const endIndex = data.emotes[i].endIndex;
-			emoteName = data.message.message.substring(startIndex, endIndex + 1);
-		}
-
-		emoteName = EscapeRegExp(emoteName);
+		const emoteElement = `<img src="${data.emotes[i].ImageUrl}" class="emote"/>`;
+		const emoteName = EscapeRegExp(data.emotes[i].Name);
 
 		let regexPattern = emoteName;
 
@@ -444,17 +437,16 @@ async function TwitchChatMessage(data) {
 
 	// Render cheermotes
 	for (i in data.cheerEmotes) {
-		const bits = data.cheerEmotes[i].bits;
-		const imageUrl = data.cheerEmotes[i].imageUrl;
-		const name = data.cheerEmotes[i].name;
+		const bits = data.cheerEmotes[i].Bits;
+		const imageUrl = data.cheerEmotes[i].ImageUrl;
+		const name = data.cheerEmotes[i].Name;
 		const cheerEmoteElement = `<img src="${imageUrl}" class="emote"/>`;
 		const bitsElements = `<span class="bits">${bits}</span>`
 		messageDiv.innerHTML = messageDiv.innerHTML.replace(new RegExp(`\\b${name}${bits}\\b`, 'i'), cheerEmoteElement + bitsElements);
 	}
 
 	// Render avatars
-	if (showAvatar) {
-		const username = data.message.username;
+	if (showAvatar && data.user) {
 		const avatarURL = await GetAvatar(username);
 		const avatar = new Image();
 		avatar.src = avatarURL;
@@ -468,7 +460,7 @@ async function TwitchChatMessage(data) {
 	if (groupConsecutiveMessages && messageList.children.length > 0 && scrollDirection != 2) {
 		const lastPlatform = messageList.lastChild.dataset.platform;
 		const lastUserId = messageList.lastChild.dataset.userId;
-		if (lastPlatform == "twitch" && lastUserId == data.user.id)
+		if (lastPlatform == "twitch" && lastUserId == userId)
 			userInfoDiv.style.display = "none";
 	}
 
@@ -482,7 +474,7 @@ async function TwitchChatMessage(data) {
 			messageDiv.innerHTML = '';
 			messageDiv.appendChild(image);
 
-			AddMessageItem(instance, data.message.msgId, 'twitch', data.user.id);
+			AddMessageItem(instance, data.messageId, 'twitch', userId);
 		};
 
 		const urlObj = new URL(message);
@@ -492,7 +484,7 @@ async function TwitchChatMessage(data) {
 		image.src = "https://external-content.duckduckgo.com/iu/?u=" + urlObj.toString();
 	}
 	else {
-		AddMessageItem(instance, data.message.msgId, 'twitch', data.user.id);
+		AddMessageItem(instance, data.messageId, 'twitch', userId);
 	}
 }
 
@@ -1967,17 +1959,19 @@ function IsThisUserAllowedToPostImagesOrNotReturnTrueIfTheyCanReturnFalseIfTheyC
 
 function GetPermissionLevel(data, platform) {
 	switch (platform) {
-		case 'twitch':
-			if (data.message.role >= 4)
+		case 'twitch': {
+			const role = data.user?.role ?? 0;
+			if (role >= 4)
 				return 40;
-			else if (data.message.role >= 3)
+			else if (role >= 3)
 				return 30;
-			else if (data.message.role >= 2)
+			else if (role >= 2)
 				return 20;
-			else if (data.message.role >= 2 || data.message.subscriber)
+			else if (data.user?.subscribed)
 				return 15;
 			else
 				return 10;
+		}
 		case 'youtube':
 			if (data.user.isOwner)
 				return 40;
