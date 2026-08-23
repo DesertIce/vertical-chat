@@ -38,7 +38,7 @@ test("exposes a default-on Show Flags appearance setting", () => {
 });
 
 test("renders flags for Twitch messages and announcements using the numeric user ID", () => {
-	const calls = script.match(/TwitchFlagsIntegration\.RenderFlag\([^;]+data\.user\.id, showFlags\)/g) || [];
+	const calls = script.match(/TwitchFlagsIntegration\.RenderFlag\([^,;]+,\s*(?:data\.)?user\.id,\s*showFlags\)/g) || [];
 
 	assert.equal(calls.length, 2);
 	assert.match(styles, /\.flag\s*\{/);

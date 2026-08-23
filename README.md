@@ -40,6 +40,7 @@ node --test
 ## Project structure
 
 - `index.html`, `style.css`, and `script.js` implement the overlay.
+- `twitch-message.js` renders ordered Twitch text, emote, and cheermote parts.
 - `settings/` defines the hosted settings page and available options.
 - `flags.js` integrates Twitch flag rendering.
 - `icons/` contains platform and badge artwork.
