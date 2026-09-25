@@ -1250,9 +1250,9 @@ function PatreonPledgeCreated(data) {
 
 	const user = data.attributes.full_name;
 	const amount = (data.attributes.will_pay_amount_cents / 100).toFixed(2);
-	const patreonIcon = `<img src="icons/platforms/patreon.png" class="platform"/>`;
+	const patreonIcon = CreatePlatformIcon("icons/platforms/patreon.png");
 
-	titleDiv.innerHTML = `${patreonIcon} ${user} joined Patreon ($${amount})`;
+	titleDiv.replaceChildren(patreonIcon, ` ${user} joined Patreon ($${amount})`);
 
 	AddMessageItem(instance, data.id);
 }
@@ -1283,15 +1283,15 @@ function KofiDonation(data) {
 	const amount = data.amount;
 	const currency = data.currency;
 	const message = data.message;
-	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+	const kofiIcon = CreatePlatformIcon("icons/platforms/kofi.png");
 
 	if (currency == "USD")
-		titleDiv.innerHTML = `${kofiIcon} ${user} donated $${amount}`;
+		titleDiv.replaceChildren(kofiIcon, ` ${user} donated $${amount}`);
 	else
-		titleDiv.innerHTML = `${kofiIcon} ${user} donated ${currency} ${amount}`;
+		titleDiv.replaceChildren(kofiIcon, ` ${user} donated ${currency} ${amount}`);
 
 	if (message != null)
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 
 	AddMessageItem(instance, data.id);
 }
@@ -1322,15 +1322,15 @@ function KofiSubscription(data) {
 	const amount = data.amount;
 	const currency = data.currency;
 	const message = data.message;
-	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+	const kofiIcon = CreatePlatformIcon("icons/platforms/kofi.png");
 
 	if (currency == "USD")
-		titleDiv.innerHTML = `${kofiIcon} ${user} subscribed ($${amount})`;
+		titleDiv.replaceChildren(kofiIcon, ` ${user} subscribed ($${amount})`);
 	else
-		titleDiv.innerHTML = `${kofiIcon} ${user} subscribed (${currency} ${amount})`;
+		titleDiv.replaceChildren(kofiIcon, ` ${user} subscribed (${currency} ${amount})`);
 
 	if (message != null)
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 
 	AddMessageItem(instance, data.id);
 }
@@ -1360,11 +1360,11 @@ function KofiResubscription(data) {
 	const user = data.from;
 	const tier = data.tier;
 	const message = data.message;
-	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+	const kofiIcon = CreatePlatformIcon("icons/platforms/kofi.png");
 
-	titleDiv.innerHTML = `${kofiIcon} ${user} subscribed (${tier})`;
+	titleDiv.replaceChildren(kofiIcon, ` ${user} subscribed (${tier})`);
 	if (message != null)
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 
 	AddMessageItem(instance, data.id);
 }
@@ -1396,7 +1396,7 @@ function KofiShopOrder(data) {
 	const currency = data.currency;
 	const message = data.message;
 	const itemTotal = data.items.length;
-	const kofiIcon = `<img src="icons/platforms/kofi.png" class="platform"/>`;
+	const kofiIcon = CreatePlatformIcon("icons/platforms/kofi.png");
 	let formattedAmount = "";
 
 	if (amount == 0)
@@ -1406,9 +1406,9 @@ function KofiShopOrder(data) {
 	else
 		formattedAmount = `(${currency} ${amount})`;
 
-	titleDiv.innerHTML = `${kofiIcon} ${user} ordered ${itemTotal} item(s) on Ko-fi ${formattedAmount}`;
+	titleDiv.replaceChildren(kofiIcon, ` ${user} ordered ${itemTotal} item(s) on Ko-fi ${formattedAmount}`);
 	if (message != null)
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 
 	AddMessageItem(instance, data.id);
 }
@@ -1439,15 +1439,15 @@ function TipeeeStreamDonation(data) {
 	const amount = data.amount;
 	const currency = data.currency;
 	const message = data.message;
-	const tipeeeStreamIcon = `<img src="icons/platforms/tipeeeStream.png" class="platform"/>`;
+	const tipeeeStreamIcon = CreatePlatformIcon("icons/platforms/tipeeeStream.png");
 
 	if (currency == "USD")
-		titleDiv.innerHTML = `${tipeeeStreamIcon} ${user} donated $${amount}`;
+		titleDiv.replaceChildren(tipeeeStreamIcon, ` ${user} donated $${amount}`);
 	else
-		titleDiv.innerHTML = `${tipeeeStreamIcon} ${user} donated ${currency} ${amount}`;
+		titleDiv.replaceChildren(tipeeeStreamIcon, ` ${user} donated ${currency} ${amount}`);
 
 	if (message != null)
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 
 	AddMessageItem(instance, data.id);
 }
@@ -1483,13 +1483,9 @@ function FourthwallOrderPlaced(data) {
 	const itemsOrdered = data.variants.length;
 	const message = DecodeHTMLString(data.statmessageus);
 	const itemImageUrl = data.variants[0].image;
-	const fourthwallProductImage = `<img src="${itemImageUrl}" class="productImage"/>`;
+	const fourthwallProductImage = CreateProductImage(itemImageUrl);
 
 	let contents = "";
-
-	contents += fourthwallProductImage;
-
-	contents += "<br><br>";
 
 	// If there user did not provide a username, just say "Someone"
 	if (user == undefined)
@@ -1508,11 +1504,11 @@ function FourthwallOrderPlaced(data) {
 	else
 		contents += ` (${orderTotal} ${currency})`;
 
-	titleDiv.innerHTML = contents;
+	titleDiv.replaceChildren(fourthwallProductImage, document.createElement("br"), document.createElement("br"), contents);
 
 	// Add the custom message from the user
 	if (message.trim() != "")
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 	else
 		contentDiv.style.display = 'none'
 
@@ -1557,11 +1553,11 @@ function FourthwallDonation(data) {
 	else
 		contents += ` ${currency} ${amount}`;
 
-	titleDiv.innerHTML = contents;
+	titleDiv.textContent = contents;
 
 	// Add the custom message from the user
 	if (message.trim() != "")
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 	else
 		contentDiv.style.display = 'none'
 
@@ -1605,7 +1601,7 @@ function FourthwallSubscriptionPurchased(data) {
 	else
 		contents += ` (${currency} ${amount})`;
 
-	titleDiv.innerHTML = contents;
+	titleDiv.textContent = contents;
 	contentDiv.style.display = 'none'
 
 	AddMessageItem(instance, data.id);
@@ -1642,14 +1638,10 @@ function FourthwallGiftPurchase(data) {
 	const gifts = data.gifts.length;
 	const itemName = data.offer.name;
 	const itemImageUrl = data.offer.imageUrl;
-	const fourthwallProductImage = `<img src="${itemImageUrl}" class="productImage"/>`;
+	const fourthwallProductImage = CreateProductImage(itemImageUrl);
 	const message = DecodeHTMLString(data.statmessageus);
 
 	let contents = "";
-
-	contents += fourthwallProductImage;
-
-	contents += "<br><br>";
 
 	// If the user ordered more than one item, write how many items they ordered
 	contents += `${user} gifted`;
@@ -1667,11 +1659,11 @@ function FourthwallGiftPurchase(data) {
 	else
 		contents += ` (${currency}${total})`;
 
-	titleDiv.innerHTML = contents;
+	titleDiv.replaceChildren(fourthwallProductImage, document.createElement("br"), document.createElement("br"), contents);
 
 	// Add the custom message from the user
 	if (message.trim() != "")
-		contentDiv.innerHTML = `${message}`;
+		contentDiv.textContent = `${message}`;
 	else
 		contentDiv.style.display = 'none'
 
@@ -1705,13 +1697,11 @@ function FourthwallGiftDrawStarted(data) {
 	const durationSeconds = data.durationSeconds;
 	const itemName = data.offer.name;
 
-	let contents = "";
+	const heading = document.createElement("h3");
+	heading.textContent = `🎁 ${itemName} Giveaway!`;
 
-	// If the user ordered more than one item, write how many items they ordered
-	contents += `<h3>🎁 ${itemName} Giveaway!</h3>`;
-
-	titleDiv.innerHTML = contents;
-	contentDiv.innerHTML = `Type !join in the next ${durationSeconds} seconds for your chance to win!`;
+	titleDiv.replaceChildren(heading);
+	contentDiv.textContent = `Type !join in the next ${durationSeconds} seconds for your chance to win!`;
 	//contentDiv.style.display = `none`;
 
 	AddMessageItem(instance, data.id);
@@ -1740,14 +1730,11 @@ function FourthwallGiftDrawEnded(data) {
 	titleDiv.classList.add('centerThatShitHomie');
 	contentDiv.classList.add('centerThatShitHomie');
 
-	let contents = "";
+	const heading = document.createElement("h3");
+	heading.textContent = "🥳 GIVEAWAY ENDED 🥳";
 
-	// If the user ordered more than one item, write how many items they ordered
-	contents += `<h3>🥳 GIVEAWAY ENDED 🥳</h3>`;
-	//contents += `Congratulations ${GetWinnersList(data.gifts)}!`
-
-	titleDiv.innerHTML = contents;
-	contentDiv.innerHTML = `Congratulations ${GetWinnersList(data.gifts)}!`;
+	titleDiv.replaceChildren(heading);
+	contentDiv.textContent = `Congratulations ${GetWinnersList(data.gifts)}!`;
 	//contentDiv.style.display = `none`;
 
 	AddMessageItem(instance, data.id);
@@ -1891,6 +1878,21 @@ function AddMessageItem(element, elementID, platform, userId) {
 	}, 200);
 }
 
+function CreatePlatformIcon(src) {
+	const icon = new Image();
+	icon.src = src;
+	icon.classList.add("platform");
+	return icon;
+}
+
+function CreateProductImage(src) {
+	const image = new Image();
+	image.src = src;
+	image.classList.add("productImage");
+	return image;
+}
+
+// Only write the decoded result as text; it may contain markup
 function DecodeHTMLString(html) {
 	var txt = document.createElement("textarea");
 	txt.innerHTML = html;
